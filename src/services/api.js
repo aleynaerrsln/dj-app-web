@@ -1,4 +1,4 @@
-// src/services/api.js - Backend API servisi
+// src/services/api.js - Backend API servisi (BACKEND RESPONSE FIXED)
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -39,7 +39,7 @@ api.interceptors.response.use(
   }
 );
 
-// ========== AUTH ENDPOINTS ========== (DÜZELTME YAPILDI)
+// ========== AUTH ENDPOINTS ==========
 export const authAPI = {
   // Kayıt
   register: (data) => api.post('/api/register', data),
@@ -124,12 +124,13 @@ export const setAuthToken = (token) => {
 };
 
 export const getImageUrl = (imagePath) => {
-  if (!imagePath || imagePath === 'image.jpg') return null;
+  if (!imagePath || imagePath === 'image.jpg') return '/default-music.jpg';
   if (imagePath.startsWith('http') || imagePath.startsWith('data:')) return imagePath;
   if (imagePath.startsWith('/uploads/')) return `${API_BASE_URL}${imagePath}`;
   return `${API_BASE_URL}/uploads/${imagePath}`;
 };
-// ========== MUSIC ENDPOINTS ==========
+
+// ========== MUSIC ENDPOINTS (BACKEND RESPONSE FIXED) ==========
 export const musicAPI = {
   // Tüm müzikler
   getAllMusic: (params = {}) => {
@@ -144,23 +145,77 @@ export const musicAPI = {
   // Müzik detayı
   getMusicById: (id) => api.get(`/api/music/${id}`),
 
-  // Featured müzikler
-  getFeaturedMusic: (limit = 10) => api.get(`/api/music/featured?limit=${limit}`),
-
-  // Popüler müzikler
-  getPopularMusic: (params = {}) => {
-    const { limit = 20, genre } = params;
-    let url = `/api/music/popular?limit=${limit}`;
-    if (genre) url += `&genre=${genre}`;
-    return api.get(url);
+  // ✅ FIXED: Featured müzikler - Backend response handler
+  getFeaturedMusic: async (limit = 10) => {
+    try {
+      const response = await api.get(`/api/music/featured?limit=${limit}`);
+      console.log('🔍 Featured raw response:', response.data);
+      
+      // Backend structure: { success: true, message: "...", data: { musics: [...] } }
+      const musics = response.data.data?.musics || [];
+      
+      // Frontend beklediği format: { data: { music: [...], musics: [...] } }
+      return {
+        data: {
+          success: response.data.success,
+          music: musics,
+          musics: musics
+        }
+      };
+    } catch (error) {
+      console.error('❌ Featured music API error:', error);
+      return { data: { success: false, music: [], musics: [] } };
+    }
   },
 
-  // Yeni çıkanlar
-  getNewReleases: (params = {}) => {
-    const { limit = 20, genre } = params;
-    let url = `/api/music/new-releases?limit=${limit}`;
-    if (genre) url += `&genre=${genre}`;
-    return api.get(url);
+  // ✅ FIXED: Popüler müzikler - Backend response handler
+  getPopularMusic: async (params = {}) => {
+    try {
+      const { limit = 20, genre } = params;
+      let url = `/api/music/popular?limit=${limit}`;
+      if (genre) url += `&genre=${genre}`;
+      
+      const response = await api.get(url);
+      console.log('🔍 Popular raw response:', response.data);
+      
+      const musics = response.data.data?.musics || [];
+      
+      return {
+        data: {
+          success: response.data.success,
+          music: musics,
+          musics: musics
+        }
+      };
+    } catch (error) {
+      console.error('❌ Popular music API error:', error);
+      return { data: { success: false, music: [], musics: [] } };
+    }
+  },
+
+  // ✅ FIXED: Yeni çıkanlar - Backend response handler
+  getNewReleases: async (params = {}) => {
+    try {
+      const { limit = 20, genre } = params;
+      let url = `/api/music/new-releases?limit=${limit}`;
+      if (genre) url += `&genre=${genre}`;
+      
+      const response = await api.get(url);
+      console.log('🔍 New Releases raw response:', response.data);
+      
+      const musics = response.data.data?.musics || [];
+      
+      return {
+        data: {
+          success: response.data.success,
+          music: musics,
+          musics: musics
+        }
+      };
+    } catch (error) {
+      console.error('❌ New releases API error:', error);
+      return { data: { success: false, music: [], musics: [] } };
+    }
   },
 
   // Genre'ye göre müzikler
@@ -210,10 +265,19 @@ export const playlistAPI = {
     api.delete(`/api/playlists/${id}/tracks`, { data: { trackIds } }),
 };
 
-// ========== HOT ENDPOINTS ==========
+// ========== HOT ENDPOINTS (FIXED) ==========
 export const hotAPI = {
-  // Her genre'den hot playlist'ler
-  getHotPlaylists: () => api.get('/api/hot'),
+  // ✅ FIXED: Her genre'den hot playlist'ler
+  getHotPlaylists: async () => {
+    try {
+      const response = await api.get('/api/hot');
+      console.log('🔍 HOT raw response:', response.data);
+      return response;
+    } catch (error) {
+      console.error('❌ HOT API error:', error);
+      return { data: { success: false, hotPlaylists: [] } };
+    }
+  },
 
   // Genre'ye göre latest playlist
   getLatestPlaylistByGenre: (genre) => api.get(`/api/hot/genre/${genre}/latest`),
@@ -245,4 +309,5 @@ export const hotAPI = {
   // HOT stats
   getHotStats: () => api.get('/api/hot/stats'),
 };
+
 export default api;

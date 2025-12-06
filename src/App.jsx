@@ -1,4 +1,4 @@
-// src/App.jsx - COMPLETE & UPDATED (ALL ROUTES)
+// src/App.jsx - COMPLETE & UPDATED (ALL ROUTES + TRACK DETAIL)
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar/Navbar';
@@ -7,6 +7,8 @@ import HotPage from './pages/HotPage';
 import Top10Page from './pages/Top10Page';
 import ExplorePage from './pages/ExplorePage';
 import SearchPage from './pages/SearchPage';
+import PlaylistDetailPage from './pages/PlaylistDetailPage';
+import TrackDetailPage from './pages/TrackDetailPage'; // ✅ YENİ IMPORT
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
@@ -31,29 +33,12 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             
             {/* User Profile */}
-            <Route path="/profile/:id" element={<ProfilePage />} />
-            
+<Route path="/profile/:id" element={<ProfilePage />} />            
             {/* Playlist Detail */}
-            <Route 
-              path="/playlist/:id" 
-              element={
-                <div className="container section" style={{ paddingTop: '120px' }}>
-                  <h1>Playlist Detail</h1>
-                  <p>Coming Soon...</p>
-                </div>
-              } 
-            />
+            <Route path="/playlist/:id" element={<PlaylistDetailPage />} />
             
-            {/* Track Detail */}
-            <Route 
-              path="/track/:id" 
-              element={
-                <div className="container section" style={{ paddingTop: '120px' }}>
-                  <h1>Track Detail</h1>
-                  <p>Coming Soon...</p>
-                </div>
-              } 
-            />
+            {/* ✅ Track Detail - UPDATED */}
+            <Route path="/track/:id" element={<TrackDetailPage />} />
             
             {/* Genre Page */}
             <Route 
